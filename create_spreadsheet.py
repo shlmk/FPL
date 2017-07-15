@@ -1,6 +1,10 @@
 import xlsxwriter
 
-def create_spreadsheet(spreadsheet_name, data, desired_sheets='All'):
+def write_worksheet(wksheet, data, sheet):
+  columns = ['Week ' + str(num) for num in range(1,39)]
+  columns.insert(0, 'Teams')
+
+  wksheet.write_row('A1', columns)
 
 def create_spreadsheet(spreadsheet_name, data, desired_sheets='all'):
 
