@@ -1,6 +1,6 @@
 import xlsxwriter
 
-def create_season_spreadsheet(spreadsheet_name, data, workbook='ALL'):
+def create_spreadsheet(spreadsheet_name, data, workbook='ALL'):
 
   workbook = xlsxwriter.Workbook('hi.xlsx')
   worksheet = workbook.add_worksheet('Test')
