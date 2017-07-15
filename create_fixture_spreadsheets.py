@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     with open('raw-data/teams.txt', 'w') as outfile:
       json.dump(data['teams'], outfile)
-  
+
   #https://stackoverflow.com/a/2835672
   with open('raw-data/fixtures.txt') as fixtures:
     fixture_data = json.load(fixtures)
@@ -31,4 +31,5 @@ if __name__ == "__main__":
   with open('raw-data/teams.txt') as teams:
     team_data = json.load(teams)
 
-  print(team_data)
+  teams = [team['name'] for team in team_data]
+  fixture_dict = {team: {'opponent':[], 'difficulty':[]} for team in teams}
