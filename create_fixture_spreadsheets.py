@@ -1,6 +1,7 @@
 import requests
 import json
 import os.path
+from copy import deepcopy
 
 def get_data(fpl_link):
   r = requests.get(fpl_link)
@@ -9,6 +10,17 @@ def get_data(fpl_link):
     raise ValueError('Error getting fixtures list')
   else:
     return r.content
+
+def convert_fixture_ids_to_teams(fixtures, teams):
+  new_fixtures = deepcopy(fixtures)
+
+  for fixture in new_fixtures:
+     home_id = fixture['team_h']
+     away_id = fixture['team_a']
+     fixture['team_h'] = teams[home_id - 1]
+     fixture['team_a'] = teams[away_id - 1]
+
+  return new_fixtures
 
 if __name__ == "__main__":
   # https://stackoverflow.com/a/82852
@@ -33,3 +45,5 @@ if __name__ == "__main__":
 
   teams = [team['name'] for team in team_data]
   fixture_dict = {team: {'opponent':[], 'difficulty':[]} for team in teams}
+
+  fixture_with_teams = convert_fixture_ids_to_teams(fixture_data, teams)
