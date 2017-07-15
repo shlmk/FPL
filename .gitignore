@@ -1,0 +1,3 @@
+# Ignore excel files and compiled python
+*.xlsx   
+*.pyc
