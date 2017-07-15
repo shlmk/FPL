@@ -47,3 +47,21 @@ if __name__ == "__main__":
   fixture_dict = {team: {'opponent':[], 'difficulty':[]} for team in teams}
 
   fixture_with_teams = convert_fixture_ids_to_teams(fixture_data, teams)
+
+  for fixture in fixture_with_teams:
+    home_team = fixture['team_h']
+    away_team = fixture['team_a']
+    home_diff = fixture['team_h_difficulty']
+    away_diff = fixture['team_a_difficulty']
+
+    fixture_dict[home_team]['opponent'].append(away_team + ' (H)')
+    fixture_dict[home_team]['difficulty'].append(home_diff)
+    fixture_dict[away_team]['opponent'].append(home_team + ' (A)')
+    fixture_dict[away_team]['difficulty'].append(away_diff)
+
+  #https://stackoverflow.com/a/273227 -- see discussion (I can get away because no race condition)
+  if not os.path.exists('processed-data'):
+    os.makedirs('processed-data')
+
+  with open('processed-data/team_schedules.txt', 'w') as outfile:
+    json.dump(fixture_dict, outfile)
