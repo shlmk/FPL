@@ -7,9 +7,9 @@ def write_worksheet(wksheet, data, sheet):
   wksheet.write_row(0,0, columns)
 
   teams = sorted(data.keys())
-  wksheet.write_column(1, 0, teams)
-  wksheet.write_column(1 +len(teams), 0, teams)
-  wksheet.write_column(1 + 2 * len(teams), 0, teams)
+  wksheet.write_column(1, 0, teams)                           # Win Lose Draw
+  wksheet.write_column(1 + len(teams) + 1, 0, teams)          # Number of Goals Conceded
+  wksheet.write_column(1 + 2 * (len(teams) + 1), 0, teams)    # Number of Goals Scored
 
 def create_spreadsheet(spreadsheet_name, data, desired_sheets='all'):
 
