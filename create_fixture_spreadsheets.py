@@ -2,6 +2,7 @@ import requests
 import json
 import os.path
 from copy import deepcopy
+from create_spreadsheet import create_spreadsheet
 
 def get_data(fpl_link):
   r = requests.get(fpl_link)
@@ -23,45 +24,57 @@ def convert_fixture_ids_to_teams(fixtures, teams):
   return new_fixtures
 
 if __name__ == "__main__":
-  # https://stackoverflow.com/a/82852
-  if not os.path.isfile('raw-data/fixtures.txt'):
-    data = json.loads(get_data('https://fantasy.premierleague.com/drf/fixtures/'))
-    # https://stackoverflow.com/a/12309296
-    with open('raw-data/fixtures.txt', 'w') as outfile:
-      json.dump(data, outfile)
 
-  if not os.path.isfile('raw-data/teams.txt'):
-    data = json.loads(get_data('https://fantasy.premierleague.com/drf/bootstrap-static'))
+  if not os.path.isfile('processed-data/team_schedules.txt'):
 
-    with open('raw-data/teams.txt', 'w') as outfile:
-      json.dump(data['teams'], outfile)
+    #https://stackoverflow.com/a/273227 -- see discussion (I can get away because no race condition)
+    if not os.path.exists('raw-data'):
+      os.makedirs('raw-data')
 
-  #https://stackoverflow.com/a/2835672
-  with open('raw-data/fixtures.txt') as fixtures:
-    fixture_data = json.load(fixtures)
+    # https://stackoverflow.com/a/82852
+    if not os.path.isfile('raw-data/fixtures.txt'):
+      data = json.loads(get_data('https://fantasy.premierleague.com/drf/fixtures/'))
+      # https://stackoverflow.com/a/12309296
+      with open('raw-data/fixtures.txt', 'w') as outfile:
+        json.dump(data, outfile)
 
-  with open('raw-data/teams.txt') as teams:
-    team_data = json.load(teams)
+    if not os.path.isfile('raw-data/teams.txt'):
+      data = json.loads(get_data('https://fantasy.premierleague.com/drf/bootstrap-static'))
 
-  teams = [team['name'] for team in team_data]
-  fixture_dict = {team: {'opponent':[], 'difficulty':[]} for team in teams}
+      with open('raw-data/teams.txt', 'w') as outfile:
+        json.dump(data['teams'], outfile)
 
-  fixture_with_teams = convert_fixture_ids_to_teams(fixture_data, teams)
+    #https://stackoverflow.com/a/2835672
+    with open('raw-data/fixtures.txt') as fixtures:
+      fixture_data = json.load(fixtures)
 
-  for fixture in fixture_with_teams:
-    home_team = fixture['team_h']
-    away_team = fixture['team_a']
-    home_diff = fixture['team_h_difficulty']
-    away_diff = fixture['team_a_difficulty']
+    with open('raw-data/teams.txt') as teams:
+      team_data = json.load(teams)
 
-    fixture_dict[home_team]['opponent'].append(away_team + ' (H)')
-    fixture_dict[home_team]['difficulty'].append(home_diff)
-    fixture_dict[away_team]['opponent'].append(home_team + ' (A)')
-    fixture_dict[away_team]['difficulty'].append(away_diff)
+    teams = [team['name'] for team in team_data]
+    fixture_dict = {team: {'opponent':[], 'difficulty':[]} for team in teams}
 
-  #https://stackoverflow.com/a/273227 -- see discussion (I can get away because no race condition)
-  if not os.path.exists('processed-data'):
-    os.makedirs('processed-data')
+    fixture_with_teams = convert_fixture_ids_to_teams(fixture_data, teams)
 
-  with open('processed-data/team_schedules.txt', 'w') as outfile:
-    json.dump(fixture_dict, outfile)
+    for fixture in fixture_with_teams:
+      home_team = fixture['team_h']
+      away_team = fixture['team_a']
+      home_diff = fixture['team_h_difficulty']
+      away_diff = fixture['team_a_difficulty']
+
+      fixture_dict[home_team]['opponent'].append(away_team + ' (H)')
+      fixture_dict[home_team]['difficulty'].append(home_diff)
+      fixture_dict[away_team]['opponent'].append(home_team + ' (A)')
+      fixture_dict[away_team]['difficulty'].append(away_diff)
+
+    if not os.path.exists('processed-data'):
+      os.makedirs('processed-data')
+
+    with open('processed-data/team_schedules.txt', 'w') as outfile:
+      json.dump(fixture_dict, outfile)
+
+  else:
+    with open('processed-data/team_schedules.txt') as team_schedules:
+      team_data = json.load(team_schedules)
+
+    create_spreadsheet('test.xlsx', team_data, 'ALL')
