@@ -1,15 +1,22 @@
 import xlsxwriter
 
-def write_worksheet(wksheet, data, sheet):
+#TODO: Need to move workbook into write_worksheet to be able to do formatting!
+
+def write_section(wksheet, start_row, start_col, section_name, data, sheet):
   columns = ['Week ' + str(num) for num in range(1,39)]
   columns.insert(0, 'Teams')
-
-  wksheet.write_row(0,0, columns)
-
   teams = sorted(data.keys())
-  wksheet.write_column(1, 0, teams)                           # Win Lose Draw
-  wksheet.write_column(1 + len(teams) + 1, 0, teams)          # Number of Goals Conceded
-  wksheet.write_column(1 + 2 * (len(teams) + 1), 0, teams)    # Number of Goals Scored
+
+  wksheet.write(start_row, start_col, section_name)    # Header (e.g. Win/Lose/Draw)
+  wksheet.write_row(1+start_row, start_col, columns)   # Column Names
+  wksheet.write_column(2+start_row, start_col, teams)  # Team names (rows)
+
+def write_worksheet(wksheet, data, sheet, stats):
+
+  num_of_teams = len(data.keys())
+
+  for idx, stat in enumerate(stats):
+    write_section(wksheet, idx * (num_of_teams + 3), 0, stat, data, sheet)
 
 def create_spreadsheet(spreadsheet_name, data, desired_sheets='all'):
 
