@@ -11,6 +11,9 @@ def write_section(wksheet, start_row, start_col, section_name, data, sheet):
   wksheet.write_row(1+start_row, start_col, columns)   # Column Names
   wksheet.write_column(2+start_row, start_col, teams)  # Team names (rows)
 
+  for idx, team in enumerate(teams):
+    wksheet.write_row(2+idx+start_row, start_col+1, data[team][sheet])
+
 def write_worksheet(wksheet, data, sheet, stats):
 
   num_of_teams = len(data.keys())
