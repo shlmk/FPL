@@ -52,7 +52,7 @@ if __name__ == "__main__":
       team_data = json.load(teams)
 
     teams = [team['name'] for team in team_data]
-    fixture_dict = {team: {'opponent':[], 'difficulty':[]} for team in teams}
+    fixture_dict = {team: {'opponents':[], 'difficulty':[]} for team in teams}
 
     fixture_with_teams = convert_fixture_ids_to_teams(fixture_data, teams)
 
@@ -62,9 +62,9 @@ if __name__ == "__main__":
       home_diff = fixture['team_h_difficulty']
       away_diff = fixture['team_a_difficulty']
 
-      fixture_dict[home_team]['opponent'].append(away_team + ' (H)')
+      fixture_dict[home_team]['opponents'].append(away_team + ' (H)')
       fixture_dict[home_team]['difficulty'].append(home_diff)
-      fixture_dict[away_team]['opponent'].append(home_team + ' (A)')
+      fixture_dict[away_team]['opponents'].append(home_team + ' (A)')
       fixture_dict[away_team]['difficulty'].append(away_diff)
 
     if not os.path.exists('processed-data'):
