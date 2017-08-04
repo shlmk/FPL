@@ -23,15 +23,19 @@ def write_worksheet(wksheet, data, sheet, stats):
 
 def create_spreadsheet(spreadsheet_name, data, desired_sheets='all'):
 
-  if (desired_sheets!= 'all' and desired_sheets != 'opponents' and desired_sheets!= 'diffculty'):
-    raise ValueError('Wrong value for wookbook -- must be ALL, Fixtures, or Diffculty!')
+  stats = ['Win/Draw/Lose', 'Goals Conceded', 'Goals Scored']
 
-  workbook = xlsxwriter.Workbook(spreadsheet_name+'.xlsx')
+  if (desired_sheets!= 'all' and desired_sheets != 'opponents' and desired_sheets!= 'diffculty'):
+    raise ValueError('Wrong value for wookbook -- must be all, opponents, or diffculty!')
+
+  workbook = xlsxwriter.Workbook(spreadsheet_name)
 
   if desired_sheets == 'all' or desired_sheets == 'opponents':
     worksheet = workbook.add_worksheet('opponents')
+    write_worksheet(worksheet, data, 'opponents', stats)
 
   if desired_sheets == 'all' or desired_sheets == 'difficulty':
     worksheet = workbook.add_worksheet('difficulty')
+    write_worksheet(worksheet, data, 'difficulty', stats)
 
   workbook.close()
