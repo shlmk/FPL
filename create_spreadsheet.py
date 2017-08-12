@@ -23,11 +23,10 @@ def write_worksheet(wksheet, data, sheet, stats):
     write_section(wksheet, idx * (num_of_teams + 3), stat, data, sheet)
 
 def create_spreadsheet(spreadsheet_name, data, desired_sheets='all'):
-
   stats = ['Win/Draw/Lose', 'Goals Conceded', 'Goals Scored']
 
-  if (desired_sheets!= 'all' and desired_sheets != 'opponents' and desired_sheets!= 'diffculty'):
-    raise ValueError('Wrong value for wookbook -- must be all, opponents, or diffculty!')
+  if (desired_sheets!= 'all' and desired_sheets != 'opponents' and desired_sheets!= 'difficulty'):
+    raise ValueError('Wrong value for wookbook -- must be all, opponents, or difficulty!')
 
   workbook = xlsxwriter.Workbook(spreadsheet_name)
 
