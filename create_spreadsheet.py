@@ -1,27 +1,27 @@
 import xlsxwriter
-import pandas as pd
 
 #TODO: Need to move workbook into write_worksheet to be able to do formatting!
 
-def write_section(wksheet, start_row, start_col, section_name, data, sheet):
+def write_section(wksheet, start_row, section_name, data, sheet):
   columns = ['Week ' + str(num) for num in range(1,39)]
   columns.insert(0, 'Teams')
 
   teams = sorted(data.keys())
 
-  wksheet.write(start_row, start_col, section_name)    # Header (e.g. Win/Lose/Draw)
-  wksheet.write_row(1+start_row, start_col, columns)   # Column Names
-  wksheet.write_column(2+start_row, start_col, teams)  # Team names (rows)
+  wksheet.write(start_row, 0, section_name, bold)    # Header (e.g. Win/Lose/Draw)
+  wksheet.write_row(1+start_row, 0, columns, bold)   # Column Names
+  wksheet.write_column(2+start_row, 0, teams, bold)  # Team names (rows)
 
   for idx, team in enumerate(teams):
-    wksheet.write_row(2+idx+start_row, start_col+1, data[team][sheet])
+    wksheet.write_row(2+idx+start_row, 1, data[team][sheet])
 
 def write_worksheet(wksheet, data, sheet, stats):
 
   num_of_teams = len(data.keys())
 
+  # Note: rows and columns are zero indexed! (A1 = 0)
   for idx, stat in enumerate(stats):
-    write_section(wksheet, idx * (num_of_teams + 3) + 1, 0, stat, data, sheet)
+    write_section(wksheet, idx * (num_of_teams + 3), stat, data, sheet)
 
 def create_spreadsheet(spreadsheet_name, data, desired_sheets='all'):
 
