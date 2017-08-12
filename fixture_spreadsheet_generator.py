@@ -4,15 +4,26 @@ import os.path
 from copy import deepcopy
 from create_spreadsheet import create_spreadsheet
 
-def get_data(fpl_link):
-  r = requests.get(fpl_link)
+'''
+  Gets fixture data from fpl website.
+  @return    list of premier league fixtures otherwise an error
+'''
+def get_data_from_fpl():
+  r = requests.get('https://fantasy.premierleague.com/drf/fixtures/')
 
   if r.status_code != 200:
     raise ValueError('Error getting fixtures list')
   else:
     return r.content
 
-def convert_fixture_ids_to_teams(fixtures, teams):
+'''
+  Creates a new (deep copy) list of fixtures with team ids replaced by the
+  actual team names
+  @param  teams     An alphabetically sorted list of all 20 Premier League teams
+  @param  fixtures  A list of all fixtures
+  @return           Deep copy of fixture list with team names rather than team ids
+'''
+def convert_fixture_ids_to_teams(teams, fixtures):
   new_fixtures = deepcopy(fixtures)
 
   for fixture in new_fixtures:
@@ -33,7 +44,7 @@ if __name__ == "__main__":
 
     # https://stackoverflow.com/a/82852
     if not os.path.isfile('raw-data/fixtures.txt'):
-      data = json.loads(get_data('https://fantasy.premierleague.com/drf/fixtures/'))
+      data = json.loads(get_data_from_fpl())
       # https://stackoverflow.com/a/12309296
       with open('raw-data/fixtures.txt', 'w') as outfile:
         json.dump(data, outfile)
