@@ -16,7 +16,6 @@ def write_section(wksheet, start_row, section_name, data, sheet):
     wksheet.write_row(2+idx+start_row, 1, data[team][sheet])
 
 def write_worksheet(wksheet, data, sheet, stats):
-
   num_of_teams = len(data.keys())
 
   # Note: rows and columns are zero indexed! (A1 = 0)
