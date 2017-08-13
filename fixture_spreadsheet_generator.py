@@ -1,8 +1,25 @@
+import argparse
 import requests
 import json
 import os.path
 from copy import deepcopy
 from create_spreadsheet import create_spreadsheet
+
+'''
+  Parsers commandline arguments to generate spreadsheet. Options user can
+  select are: the filename of the spreadsheet, what sheets to include,
+  and whether to override raw and processed data folders
+'''
+def parse_arguments():
+  parser = argparse.ArgumentParser(description='Generate FPL Fixture Spreadsheet')
+  parser.add_argument('spreadsheet_filename', type=str, nargs='?', default='fixtures',
+                      help='the spreadsheet filename (e.g. fixtures); .xlsx will be appended for you')
+  parser.add_argument('sheets', choices=['all', 'opponents', 'difficulty'],
+                    help='type of sheet you want included. Options are all,' +
+                    ' opponents, or difficulty')
+  parser.add_argument('--override', dest='override', action='store_true',
+                      help='whether to override the raw and processed data (if it exists)')
+  return parser
 
 '''
   Gets data at a specific url from fpl website.
@@ -88,7 +105,13 @@ def process_fixtures(teams, fixtures):
   return processed_dict
 
 if __name__ == "__main__":
-  override = True
+  parser = parse_arguments()
+  args = parser.parse_args()
+
+  spreadsheet_filename = args.spreadsheet_filename
+  sheets = args.sheets
+  override = args.override
+
   '''
     Raw data section
   '''
@@ -123,8 +146,8 @@ if __name__ == "__main__":
     with open('processed_data/team_schedules.txt', 'w') as outfile:
       json.dump(complete_fixtures, outfile)
 
-    create_spreadsheet('test5.xlsx', complete_fixtures)
+    create_spreadsheet('fixtures.xls', complete_fixtures)
 
   else:
     with open('processed_data/team_schedules.txt') as team_fixtures:
-      create_spreadsheet('test5.xlsx',  json.load(team_fixtures), 'all')
+      create_spreadsheet(spreadsheet_filename + '.xlsx',  json.load(team_fixtures), sheets)
