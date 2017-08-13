@@ -1,6 +1,16 @@
 import xlsxwriter
 
-def write_section(worksheet, start_row, section_name, data, sheet_name, cell_format):
+'''
+  Helper function that writes a particular section of a worksheet, including the
+  relevant information for all twenty teams as well as some basic formatting.
+  @param    worksheet       The worksheet object (part of xlsxwriter)
+  @param    sheet_name      The name of the worksheet (str)
+  @param    section_name    The name of the section (str)
+  @param    start_row       The start row to begin writing the data
+  @param    cell_format     The formatting to use for headers
+  @param    data            The relevant data
+'''
+def write_section(worksheet, sheet_name, section_name, start_row, cell_format, data):
   teams = sorted(data.keys())
   columns = ['Week ' + str(num) for num in range(1,39)]
   columns.insert(0, 'Teams')
@@ -12,6 +22,14 @@ def write_section(worksheet, start_row, section_name, data, sheet_name, cell_for
   for idx, team in enumerate(teams):
     worksheet.write_row(2+idx+start_row, 1, data[team][sheet_name])
 
+'''
+  Helper function that writes a worksheet within a workbook. Not directly accessible.
+  Instead is called by create_spreadsheet method
+  @param    workbook       The workbook object (part of xlswriter)
+  @param    sheet_name     The name of the worksheet
+  @data     data           The relevant data
+  @stats    stats          The stats (e.g Wins/Lose/Draw) that is being recorded
+'''
 def write_worksheet(workbook, data, sheet_name, stats):
   worksheet = workbook.add_worksheet(sheet_name)
   num_of_teams = len(data.keys())
@@ -20,7 +38,14 @@ def write_worksheet(workbook, data, sheet_name, stats):
   for idx, stat in enumerate(stats):
     write_section(worksheet, idx * (num_of_teams + 3), stat, data, sheet_name,
                 bold)
-                
+
+'''
+  Function that creates Premier League fixture/difficulty spreadsheet. Called by
+  the fixture_spreadsheet_generator script.
+  @param   spreadsheet_name    The name of the spreadsheet that will be created
+  @param   data                The data that contains the relevant fixture information
+  @param   desired_sheets      The sheets to be included in the spreadsheet
+'''
 def create_spreadsheet(spreadsheet_name, data, desired_sheets='all'):
   stats = ['Win/Draw/Lose', 'Goals Conceded', 'Goals Scored']
 
