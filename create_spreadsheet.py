@@ -30,7 +30,7 @@ def write_section(worksheet, sheet_name, section_name, start_row, cell_format, d
   @data     data           The relevant data
   @stats    stats          The stats (e.g Wins/Lose/Draw) that is being recorded
 '''
-def write_worksheet(workbook, data, sheet_name, stats):
+def write_worksheet(workbook, sheet_name, data, stats):
   worksheet = workbook.add_worksheet(sheet_name)
   num_of_teams = len(data.keys())
   bold = workbook.add_format({'bold': True})
