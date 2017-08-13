@@ -5,16 +5,45 @@ from copy import deepcopy
 from create_spreadsheet import create_spreadsheet
 
 '''
-  Gets fixture data from fpl website.
-  @return    list of premier league fixtures otherwise an error
+  Gets data at a specific url from fpl website.
+  @param   fpl_link   URL to get data from
+  @return             json representation of premier league fixtures otherwise
+                      an error
 '''
-def get_data_from_fpl():
-  r = requests.get('https://fantasy.premierleague.com/drf/fixtures/')
+def get_data_from_fpl(fpl_link):
+  r = requests.get(fpl_link)
 
   if r.status_code != 200:
     raise ValueError('Error getting fixtures list')
   else:
-    return r.content
+    return json.loads(r.content)
+
+'''
+  Writes the list of teams to a text file in the raw_data directory
+'''
+def write_teams_txt():
+  data = get_data_from_fpl('https://fantasy.premierleague.com/drf/bootstrap-static')
+  # https://stackoverflow.com/a/12309296
+  with open('raw_data/teams.txt', 'w') as outfile:
+    json.dump(data['teams'], outfile)
+
+'''
+  Writes all of the fixtures (with all FPL info) to a text file under the
+  raw_data directory
+'''
+def write_fixtures_txt():
+  data = get_data_from_fpl('https://fantasy.premierleague.com/drf/fixtures/')
+  with open('raw_data/fixtures.txt', 'w') as outfile:
+    json.dump(data, outfile)
+
+'''
+  Gets the data from a particular text file
+  @param    filename    the file you wish to you open
+  @return               json representation of the data in the file
+'''
+def get_data_from_txt(filename):
+  with open(filename) as data:
+    return(json.load(data))
 
 '''
   Creates a new (deep copy) list of fixtures with team ids replaced by the
@@ -34,58 +63,68 @@ def convert_fixture_ids_to_teams(teams, fixtures):
 
   return new_fixtures
 
+'''
+  Processes the list of fixtures and returns a processed dictionary of opponents
+  and difficulty level for each team
+  @param    teams     An alphabetically sorted list of all 20 Premier League teams
+  @param    fixtures  A list of all 380 fixtures in JSON format
+  @return             A dictionary with list of opponents and corresponding
+                      difficulty in chronological order
+'''
+def process_fixtures(teams, fixtures):
+  processed_dict = {team: {'opponents':[], 'difficulty':[]} for team in teams}
+
+  for fixture in fixtures:
+    home_team = fixture['team_h']
+    away_team = fixture['team_a']
+    home_diff = fixture['team_h_difficulty']
+    away_diff = fixture['team_a_difficulty']
+
+    processed_dict[home_team]['opponents'].append(away_team + ' (H)')
+    processed_dict[home_team]['difficulty'].append(str(home_diff) + ' (H)')
+    processed_dict[away_team]['opponents'].append(home_team + ' (A)')
+    processed_dict[away_team]['difficulty'].append(str(away_diff) + ' (A)')
+
+  return processed_dict
+
 if __name__ == "__main__":
+  override = True
+  '''
+    Raw data section
+  '''
+  # https://stackoverflow.com/a/273227
+  # see discussion (I can get away because no race condition)
+  if not os.path.exists('raw_data'):
+    os.makedirs('raw_data')
 
-  if not os.path.isfile('processed-data/team_schedules.txt'):
+  if not os.path.isfile('raw_data/teams.txt') or override:
+    write_teams_txt()
 
-    #https://stackoverflow.com/a/273227 -- see discussion (I can get away because no race condition)
-    if not os.path.exists('raw-data'):
-      os.makedirs('raw-data')
+  if not os.path.isfile('raw_data/fixtures.txt') or override:
+    write_fixtures_txt()
 
-    # https://stackoverflow.com/a/82852
-    if not os.path.isfile('raw-data/fixtures.txt'):
-      data = json.loads(get_data_from_fpl())
-      # https://stackoverflow.com/a/12309296
-      with open('raw-data/fixtures.txt', 'w') as outfile:
-        json.dump(data, outfile)
+  '''
+    Processed data section
+  '''
+  if not os.path.exists('processed_data'):
+    os.makedirs('processed_data')
 
-    if not os.path.isfile('raw-data/teams.txt'):
-      data = json.loads(get_data('https://fantasy.premierleague.com/drf/bootstrap-static'))
+  if not os.path.exists('processed_data/team_schedules.txt') or override:
+    team_data = get_data_from_txt('raw_data/teams.txt')
+    fixture_data = get_data_from_txt('raw_data/fixtures.txt')
 
-      with open('raw-data/teams.txt', 'w') as outfile:
-        json.dump(data['teams'], outfile)
-
-    #https://stackoverflow.com/a/2835672
-    with open('raw-data/fixtures.txt') as fixtures:
-      fixture_data = json.load(fixtures)
-
-    with open('raw-data/teams.txt') as teams:
-      team_data = json.load(teams)
+    # Included to deal with bad data of fixture ids in the wrong order
+    fixture_data = sorted(fixture_data, key=lambda k: k['id'])
 
     teams = [team['name'] for team in team_data]
-    fixture_dict = {team: {'opponents':[], 'difficulty':[]} for team in teams}
+    fixture_with_teams = convert_fixture_ids_to_teams(teams, fixture_data)
+    complete_fixtures = process_fixtures(teams, fixture_with_teams)
 
-    fixture_with_teams = convert_fixture_ids_to_teams(fixture_data, teams)
+    with open('processed_data/team_schedules.txt', 'w') as outfile:
+      json.dump(complete_fixtures, outfile)
 
-    for fixture in fixture_with_teams:
-      home_team = fixture['team_h']
-      away_team = fixture['team_a']
-      home_diff = fixture['team_h_difficulty']
-      away_diff = fixture['team_a_difficulty']
-
-      fixture_dict[home_team]['opponents'].append(away_team + ' (H)')
-      fixture_dict[home_team]['difficulty'].append(home_diff)
-      fixture_dict[away_team]['opponents'].append(home_team + ' (A)')
-      fixture_dict[away_team]['difficulty'].append(away_diff)
-
-    if not os.path.exists('processed-data'):
-      os.makedirs('processed-data')
-
-    with open('processed-data/team_schedules.txt', 'w') as outfile:
-      json.dump(fixture_dict, outfile)
+    create_spreadsheet('test5.xlsx', complete_fixtures)
 
   else:
-    with open('processed-data/team_schedules.txt') as team_schedules:
-      team_data = json.load(team_schedules)
-
-    create_spreadsheet('test.xlsx', team_data, 'ALL')
+    with open('processed_data/team_schedules.txt') as team_fixtures:
+      create_spreadsheet('test5.xlsx',  json.load(team_fixtures), 'all')
